@@ -1,6 +1,8 @@
 import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import cv2
 from PIL import Image
 
 def plot_fitness_over_iterations(fitness):
@@ -29,6 +31,26 @@ def save_output_as_gif(image_name, generated_image, data, images):
     generated_image.save(out_path, dpi=(600,600))
     np.savetxt("./results/" + image_name.rsplit('.', 1)[0] + '_' + uniq_filename + ".csv", data, delimiter=";")
     images[0].save(u"./results/{}.gif".format(image_name.rsplit('.', 1)[0] + '_' + uniq_filename), save_all=True, append_images=images[1::10], optimize=False, duration=2, loop=0)
+
+def save_as_video(image_name, generated_images, data):
+    uniq_filename = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time()).replace(':', '.')
+    
+    if not os.path.exists("./results"):
+        os.makedirs("./results")
+
+    height, width = np.array(generated_images[0]).shape[:2]
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out_path = f"./results/{image_name.rsplit('.', 1)[0]}_{uniq_filename}.mp4"
+    out = cv2.VideoWriter(out_path, fourcc, 1, (width, height))
+
+    for img in generated_images:
+        # Convert PIL Image to numpy array and from RGB to BGR color space
+        frame = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        out.write(frame)
+
+    out.release()
+    return out_path
 
 def clamp(value, min_val=0, max_val=1):
     return max(min_val, min(max_val, value))
