@@ -53,7 +53,8 @@ class Line:
 
     def get_mask(self, canvas_height, canvas_width):
         canvas = 255 * np.ones((canvas_height, canvas_width)).astype(np.uint8)  # White canvas (has to be unit8 because of cv2)
-        cv2.line(canvas, (int(self.y1), int(self.x1)), (int(self.y2), int(self.x2)), 0, LINE_WIDTH, cv2.LINE_4)
+        # cv2.line(canvas, (int(self.y1), int(self.x1)), (int(self.y2), int(self.x2)), 0, LINE_WIDTH, cv2.LINE_4)
+        cv2.rectangle(canvas, (int(self.y1), int(self.x1)), (int(self.y2), int(self.x2)), 0, -1)
         mask = np.where(canvas == 0, 1, 0).astype(np.int64)
         return mask
     
