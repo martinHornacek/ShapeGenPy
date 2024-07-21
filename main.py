@@ -12,7 +12,7 @@ GENERATE_GIF = True # generate animation [True, False]
 MAX_ADDMUT = 5 # [%] maximum aditive mutation range
 MUT_RATE = 20 # [%] mutation rate (percentage of individuals to be mutated)
 NEvo = 10 # number of evolution steps per one object 
-NUMBER_OF_OBJECTS = 6000
+NUMBER_OF_OBJECTS = 2500
 SEARCH_SPACE_SIZE = 4
 
 def print_best_fitness(population, fitness, start_time):    
@@ -26,8 +26,10 @@ if (DETERMINISTIC_MODE): # if deterministic mode, use specified seed for reprodu
 image_name = "lena.png"
 original_image = cv2.imread("images/lena.png", cv2.IMREAD_GRAYSCALE)
 # Resize the image to 64 x 64 pixels
-# original_image = cv2.resize(original_image, (64, 64), interpolation=cv2.INTER_AREA)
+original_image = cv2.resize(original_image, (64, 64), interpolation=cv2.INTER_LANCZOS4)
 original_image = np.asarray(original_image, dtype=np.int64)
+out_path = u"./results/ground_truth.png"
+array_to_image(original_image).save(out_path, dpi=(600,600))
 
 original_image_height, original_image_width = original_image.shape[0], original_image.shape[1]
 generated_image = 255 * np.ones((original_image_height, original_image_width), dtype=np.int64)
