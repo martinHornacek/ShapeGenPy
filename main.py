@@ -3,7 +3,7 @@ import copy
 import numpy as np
 import time
 from evolution import evaluate_fitness, generate_population, mutate, select_best, select_sus
-from helpers import array_to_image, plot_fitness_over_iterations, save_output_as_gif
+from helpers import array_to_image, plot_fitness_over_iterations, save_output_as_gif_and_3d
 from Line import Line
 
 DETERMINISTIC_MODE = True  # reproducible results [True, False]
@@ -12,7 +12,7 @@ GENERATE_GIF = True # generate animation [True, False]
 MAX_ADDMUT = 5 # [%] maximum aditive mutation range
 MUT_RATE = 20 # [%] mutation rate (percentage of individuals to be mutated)
 NEvo = 10 # number of evolution steps per one object 
-NUMBER_OF_OBJECTS = 2500
+NUMBER_OF_OBJECTS = 100
 SEARCH_SPACE_SIZE = 4
 
 def print_best_fitness(population, fitness, start_time):    
@@ -107,4 +107,4 @@ while count <= NUMBER_OF_OBJECTS:
 
 plot_fitness_over_iterations(fitness_over_iterations)
 print_best_fitness(next_population, next_population_fitness, start_time)
-save_output_as_gif(image_name, array_to_image(generated_image), data, images)
+save_output_as_gif_and_3d(image_name, array_to_image(generated_image), data, images)

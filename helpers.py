@@ -1,7 +1,9 @@
 import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from PIL import Image
+import pandas as pd
 
 def plot_fitness_over_iterations(fitness):
     plt.style.use('seaborn-paper') # rendering settings (font and style)
@@ -23,12 +25,70 @@ def plot_fitness_over_iterations(fitness):
 
     plt.show() # display the resulting graph and list the solution found
     
-def save_output_as_gif(image_name, generated_image, data, images):
+def save_output_as_gif_and_3d(image_name, generated_image, data, images, display_3d_plot=True):
     uniq_filename = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time()).replace(':', '.')
-    out_path = u"./results/{}.png".format(image_name.rsplit('.', 1)[0] + '_' + uniq_filename)
+    base_name = image_name.rsplit('.', 1)[0] + '_' + uniq_filename
+    
+    # Save the generated image
+    out_path = f"./results/{base_name}.png"
     generated_image.save(out_path, dpi=(600,600))
-    np.savetxt("./results/" + image_name.rsplit('.', 1)[0] + '_' + uniq_filename + ".csv", data, delimiter=";")
-    images[0].save(u"./results/{}.gif".format(image_name.rsplit('.', 1)[0] + '_' + uniq_filename), save_all=True, append_images=images[1::10], optimize=False, duration=2, loop=0)
+    
+    # Save the data as CSV
+    csv_path = f"./results/{base_name}.csv"
+    np.savetxt(csv_path, data, delimiter=";")
+    
+    # Save the GIF
+    images[0].save(f"./results/{base_name}.gif", save_all=True, append_images=images[1::10], optimize=False, duration=2, loop=0)
+    
+    # Create, display (if requested), and save 3D plot
+    plot_3d_rectangles(csv_path, base_name, display_before_save=display_3d_plot)
+
+def plot_3d_rectangles(csv_file, base_name, display_before_save=True):
+    # Read the CSV file
+    df = pd.read_csv(csv_file, delimiter=";", names=['x1', 'x2', 'y1', 'y2', 'color', 'fitness'])
+    
+    # Create a new 3D figure
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # Iterate through each rectangle in the dataframe
+    for _, row in df.iterrows():
+        x1, x2, y1, y2 = row['x1'], row['x2'], row['y1'], row['y2']
+        color = row['color'] / 255.0  # Normalize color to [0, 1]
+        
+        # Define the vertices of the rectangle
+        vertices = [
+            [x1, y1, color],
+            [x2, y1, color],
+            [x2, y2, color],
+            [x1, y2, color]
+        ]
+        
+        # Create a Poly3DCollection
+        poly = Poly3DCollection([vertices], alpha=0.8)
+        poly.set_facecolor(plt.cm.gray(color))
+        ax.add_collection3d(poly)
+    
+    # Set labels and title
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Color (Grayscale)')
+    ax.set_title('3D Visualization of Rectangles')
+    
+    # Set axis limits
+    ax.set_xlim(df['x1'].min(), df['x2'].max())
+    ax.set_ylim(df['y1'].min(), df['y2'].max())
+    ax.set_zlim(0, 1)
+    
+    # Display the plot if requested
+    if display_before_save:
+        plt.show()
+    
+    # Save the plot
+    plt.savefig(f"./results/{base_name}_3d.png", dpi=300, bbox_inches='tight')
+    
+    # Close the plot to free up memory
+    plt.close()
 
 def clamp(value, min_val=0, max_val=1):
     return max(min_val, min(max_val, value))
