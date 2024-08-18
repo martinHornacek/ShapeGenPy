@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Sequence Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #image-container { 
+            margin: 20px auto; 
+            width: 640px; 
+            height: 640px; 
+            overflow: hidden;
+            position: relative;
+        }
+        #current-image { 
+            image-rendering: pixelated;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: zoom-in;
+        }
+        #controls { margin: 20px; }
+        button { margin: 0 10px; }
+        #zoom-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+        #zoomed-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            image-rendering: pixelated;
+            cursor: zoom-out;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Sequence Viewer</h1>
+    <div id="image-container">
+        <img id="current-image" src="" alt="Current frame" onclick="toggleZoom()">
+    </div>
+    <div id="controls">
+        <button onclick="prevImage()">Previous</button>
+        <button onclick="togglePlay()">Play/Pause</button>
+        <button onclick="nextImage()">Next</button>
+    </div>
+    <p id="frame-info"></p>
+
+    <div id="zoom-container" onclick="toggleZoom()">
+        <img id="zoomed-image" src="" alt="Zoomed frame">
+    </div>
+
+    <script>
+        const images = {{ image_files|tojson }};
+        let currentIndex = 0;
+        let isPlaying = false;
+        let playInterval;
+
+        function updateImage() {
+            const imagePath = `/images/${images[currentIndex]}`;
+            document.getElementById('current-image').src = imagePath;
+            document.getElementById('zoomed-image').src = imagePath;
+            document.getElementById('frame-info').textContent = `Frame: ${currentIndex + 1}/${images.length}`;
+        }
+
+        function nextImage() {
+            currentIndex = (currentIndex + 1) % images.length;
+            updateImage();
+        }
+
+        function prevImage() {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            updateImage();
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                playInterval = setInterval(nextImage, 100);  // Adjust delay (in ms) as needed
+            } else {
+                clearInterval(playInterval);
+            }
+        }
+
+        function toggleZoom() {
+            const zoomContainer = document.getElementById('zoom-container');
+            zoomContainer.style.display = zoomContainer.style.display === 'none' ? 'block' : 'none';
+        }
+
+        updateImage();
+    </script>
+</body>
+</html>

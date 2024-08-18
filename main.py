@@ -3,8 +3,9 @@ import copy
 import numpy as np
 import time
 from evolution import evaluate_fitness, generate_population, mutate, select_best, select_sus
-from helpers import array_to_image, plot_fitness_over_iterations, save_output_as_gif_and_3d
-from Line import Line
+from helpers import array_to_image, plot_fitness_over_iterations, save_output
+from Block import Block
+import logging
 
 DETERMINISTIC_MODE = True  # reproducible results [True, False]
 DETERMINISTIC_SEED = 42 # seed for pseudo-random generator
@@ -12,7 +13,7 @@ GENERATE_GIF = True # generate animation [True, False]
 MAX_ADDMUT = 5 # [%] maximum aditive mutation range
 MUT_RATE = 20 # [%] mutation rate (percentage of individuals to be mutated)
 NEvo = 10 # number of evolution steps per one object 
-NUMBER_OF_OBJECTS = 100
+NUMBER_OF_OBJECTS = 3000
 SEARCH_SPACE_SIZE = 4
 
 def print_best_fitness(population, fitness, start_time):    
@@ -25,11 +26,8 @@ if (DETERMINISTIC_MODE): # if deterministic mode, use specified seed for reprodu
 
 image_name = "lena.png"
 original_image = cv2.imread("images/lena.png", cv2.IMREAD_GRAYSCALE)
-# Resize the image to 64 x 64 pixels
 original_image = cv2.resize(original_image, (64, 64), interpolation=cv2.INTER_LANCZOS4)
 original_image = np.asarray(original_image, dtype=np.int64)
-out_path = u"./results/ground_truth.png"
-array_to_image(original_image).save(out_path, dpi=(600,600))
 
 original_image_height, original_image_width = original_image.shape[0], original_image.shape[1]
 generated_image = 255 * np.ones((original_image_height, original_image_width), dtype=np.int64)
@@ -51,10 +49,13 @@ buffer = 0 # auxiliary variable to stop evolution if no changes occur
 count = 1 # iterator for number of objects in the final image
 images = [] # list of images used for animation process
 
+logging.basicConfig(filename='image_approximation.log', level=logging.INFO, 
+                    format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
 if GENERATE_GIF:
     images.append(array_to_image(generated_image))
 
-start_time = time.time() # start the timer
+start_time = time.time()
 
 while count <= NUMBER_OF_OBJECTS:
     next_population = generate_population(24, search_space, additive_mutation_space)
@@ -87,10 +88,12 @@ while count <= NUMBER_OF_OBJECTS:
         current_fitness = best_fitness[0]
         fitness_over_iterations.append(current_fitness)
 
-        best_individual: Line = best[0]
-        generated_image, color = best_individual.draw_line_on_canvas_with_color_from_image(generated_image, original_image)
+        best_individual: Block = best[0]
+        generated_image, color = best_individual.draw_block_on_canvas_with_color_from_image(generated_image, original_image)
+       
+        logging.info(f"Iteration {count}, Color: {color}, Fitness: {current_fitness}")
+        print(f"# {count} Fitness: {current_fitness} ")
 
-        print("# " + str(count) + " Fitness: " + str(current_fitness))
         data[count - 1, :] = np.concatenate(np.array(
                 (int(best_individual.x1),
                  int(best_individual.x2),
@@ -107,4 +110,4 @@ while count <= NUMBER_OF_OBJECTS:
 
 plot_fitness_over_iterations(fitness_over_iterations)
 print_best_fitness(next_population, next_population_fitness, start_time)
-save_output_as_gif_and_3d(image_name, array_to_image(generated_image), data, images)
+save_output(image_name, array_to_image(generated_image), data, images)

@@ -1,15 +1,15 @@
 import copy
 import numpy as np
-from helpers import calculate_rmse, clamp
-from Line import Line
+from helpers import calculate_mse, clamp
+from Block import Block
 from typing import List
 
 def select_best(population, fitness, nums):
     N = len(nums)
     fitness_sorted = np.sort(fitness)
     indices_fitness_sorted = np.argsort(fitness)
-    new_population_zeros = np.zeros(N, dtype=Line)
-    new_population = np.zeros(int(np.sum(nums)), dtype=Line)
+    new_population_zeros = np.zeros(N, dtype=Block)
+    new_population = np.zeros(int(np.sum(nums)), dtype=Block)
     new_fitness = np.zeros((int(np.sum(nums),)))
     
     for i in range(N):
@@ -23,7 +23,7 @@ def select_best(population, fitness, nums):
     return [new_population, new_fitness]
 
 def select_sus(population, fitness, nums):
-    new_population = np.zeros(nums, dtype=Line)
+    new_population = np.zeros(nums, dtype=Block)
     new_fitness = np.zeros((nums,))
     old_fitness = np.copy(fitness)
     population_size = len(population)
@@ -70,26 +70,22 @@ def evaluate_fitness(population, original_image, generated_image, fitness):
 def evaluate_partial_similarity(params):
     original_image = params[0]
     generated_image = params[1]
-    individual: Line = params[2]
+    individual: Block = params[2]
     fitness = params[3]
     
     if fitness is None:
-        generated, color = individual.draw_line_on_canvas_with_color_from_image(generated_image, original_image)       
-        return calculate_rmse(original_image, generated)
+        generated, color = individual.draw_block_on_canvas_with_color_from_image(generated_image, original_image)       
+        return calculate_mse(original_image, generated)
     else:
-        generated, color = individual.draw_line_on_canvas_with_color_from_image(generated_image, original_image)  
-        
-        if (color == 0):
-            return fitness
-        
-        new_fitness = calculate_rmse(original_image, generated)
+        generated, color = individual.draw_block_on_canvas_with_color_from_image(generated_image, original_image)          
+        new_fitness = calculate_mse(original_image, generated)
 
         if new_fitness < fitness:
             return new_fitness
         else:
             return fitness
         
-def generate_population(population_size, search_space, additive_mutation_space) -> List["Line"]:   
+def generate_population(population_size, search_space, additive_mutation_space) -> List[Block]:   
     new_population = []
 
     dX = search_space[1,0] - search_space[0,0]
@@ -108,11 +104,11 @@ def generate_population(population_size, search_space, additive_mutation_space) 
         y2 = y1 + np.random.randint(2 * additive_mutation_space[3] + 1) - additive_mutation_space[3] 
         y2 = clamp(y2, search_space[0,3], search_space[1,3])
 
-        new_population.append(Line(x1, x2, y1, y2))
+        new_population.append(Block(x1, x2, y1, y2))
 
     return new_population
 
-def mutate(population: List[Line], factor, search_space, additive_mutation_space) -> List[Line]:
+def mutate(population: List[Block], factor, search_space, additive_mutation_space) -> List[Block]:
     length_population = len(population)
 
     factor = clamp(factor, 0, 1)
@@ -120,7 +116,7 @@ def mutate(population: List[Line], factor, search_space, additive_mutation_space
     new_population = copy.deepcopy(population)
     
     for i in range(n):
-        rN = np.random.randint(2)
+        rN = np.random.randint(0, 1)
         r = int(np.ceil(np.random.uniform()*length_population)) - 1
 
         old_line = population[r]
