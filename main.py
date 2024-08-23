@@ -91,7 +91,7 @@ while count <= NUMBER_OF_OBJECTS:
         best_individual: Block = best[0]
         generated_image, color = best_individual.draw_block_on_canvas_with_color_from_image(generated_image, original_image)
        
-        logging.info(f"Iteration {count}, Color: {color}, Fitness: {current_fitness}")
+        logging.info(f"Iteration {count}, Color: {color}, MSE: {current_fitness}")
         print(f"# {count} Fitness: {current_fitness} ")
 
         data[count - 1, :] = np.concatenate(np.array(

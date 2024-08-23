@@ -119,31 +119,31 @@ def mutate(population: List[Block], factor, search_space, additive_mutation_spac
         rN = np.random.randint(0, 1)
         r = int(np.ceil(np.random.uniform()*length_population)) - 1
 
-        old_line = population[r]
-        new_line = new_population[r]
+        old_block = population[r]
+        new_block = new_population[r]
 
         if rN == 0:  # x1, y1
             mutation_x1 = (2.0 * np.random.uniform() - 1) * additive_mutation_space[0]
-            new_x1 = old_line.x1 + mutation_x1
+            new_x1 = old_block.x1 + mutation_x1
             new_x1 = clamp(new_x1, search_space[0, 0], search_space[1, 0])
 
             mutation_y1 = (2.0 * np.random.uniform() - 1) * additive_mutation_space[2]
-            new_y1 = old_line.y1 + mutation_y1
+            new_y1 = old_block.y1 + mutation_y1
             new_y1 = clamp(new_y1, search_space[0, 2], search_space[1, 2])
 
-            new_line.x1 = new_x1
-            new_line.y1 = new_y1
+            new_block.x1 = new_x1
+            new_block.y1 = new_y1
 
         elif rN == 1:  # x2, y2
             mutation_x2 = (2.0 * np.random.uniform() - 1) * additive_mutation_space[1]
-            new_x2 = old_line.x2 + mutation_x2
+            new_x2 = old_block.x2 + mutation_x2
             new_x2 = clamp(new_x2, search_space[0, 1], search_space[1, 1])
 
             mutation_y2 = (2.0 * np.random.uniform() - 1) * additive_mutation_space[3]
-            new_y2 = old_line.y2 + mutation_y2
+            new_y2 = old_block.y2 + mutation_y2
             new_y2 = clamp(new_y2, search_space[0, 3], search_space[1, 3])
 
-            new_line.x2 = new_x2
-            new_line.y2 = new_y2
+            new_block.x2 = new_x2
+            new_block.y2 = new_y2
 
     return new_population
