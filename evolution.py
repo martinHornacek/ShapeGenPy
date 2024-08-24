@@ -74,10 +74,10 @@ def evaluate_partial_similarity(params):
     fitness = params[3]
     
     if fitness is None:
-        generated, color = individual.draw_block_on_canvas_with_color_from_image(generated_image, original_image)       
+        generated, color = individual.draw_block_on_canvas_with_optimal_color(generated_image, original_image)       
         return calculate_mse(original_image, generated)
     else:
-        generated, color = individual.draw_block_on_canvas_with_color_from_image(generated_image, original_image)          
+        generated, color = individual.draw_block_on_canvas_with_optimal_color(generated_image, original_image)          
         new_fitness = calculate_mse(original_image, generated)
 
         if new_fitness < fitness:

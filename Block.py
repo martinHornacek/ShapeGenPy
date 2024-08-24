@@ -54,18 +54,29 @@ class Block:
         cv2.rectangle(canvas, (int(self.y1), int(self.x1)), (int(self.y2), int(self.x2)), self.color, -1)
         return canvas
     
-    def draw_block_on_canvas_with_color_from_image(self, generated_image, original_image):
+    def draw_block_on_canvas_with_optimal_color(self, generated_image, original_image):
         image_height, image_width = original_image.shape
 
+        # Create a copy of the generated image
+        new_image = generated_image.copy()
+
         mask = self.get_mask(image_height, image_width)
-        non_zero_pixels = original_image[mask != 0]
+        original_block = original_image[mask != 0]
+        current_block = new_image[mask != 0]
 
-        if non_zero_pixels.size > 0:
-            lightest_shade = np.max(non_zero_pixels)
-            self.color = int(lightest_shade)
+        if original_block.size > 0:
+            # Calculate the optimal color
+            diff = original_block - current_block
+            numerator = np.sum(diff)
+            denominator = diff.size
+            
+            if denominator != 0:
+                optimal_color = np.mean(current_block) + (numerator / denominator)
+                self.color = int(np.clip(optimal_color, 0, 255))
+            else:
+                self.color = int(np.mean(original_block))
 
-        line_image = 255 * np.ones_like(mask).astype(dtype=np.int64)
-        line_image[mask != 0] = self.color
+        # Update only the pixels where the mask is non-zero in the new image
+        new_image[mask != 0] = self.color
 
-        blended_image = np.minimum(generated_image, line_image)
-        return blended_image, self.color
+        return new_image, self.color
