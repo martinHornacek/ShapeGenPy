@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 
 LINE_WIDTH = 2
 
@@ -53,8 +53,7 @@ class Line:
 
     def get_mask(self, canvas_height, canvas_width):
         canvas = 255 * np.ones((canvas_height, canvas_width)).astype(np.uint8)  # White canvas (has to be unit8 because of cv2)
-        # cv2.line(canvas, (int(self.y1), int(self.x1)), (int(self.y2), int(self.x2)), 0, LINE_WIDTH, cv2.LINE_4)
-        cv2.rectangle(canvas, (int(self.y1), int(self.x1)), (int(self.y2), int(self.x2)), 0, -1)
+        cv2.line(canvas, (int(self.y1), int(self.x1)), (int(self.y2), int(self.x2)), 0, LINE_WIDTH, cv2.LINE_4)
         mask = np.where(canvas == 0, 1, 0).astype(np.int64)
         return mask
     
@@ -75,3 +74,30 @@ class Line:
         # Overlay the line image over the generated image and take the darker color for each pixel
         blended_image = np.minimum(generated_image, line_image)
         return blended_image, self.color
+    
+    def draw_block_on_canvas_with_optimal_color(self, generated_image, original_image):
+        image_height, image_width = original_image.shape
+
+        # Create a copy of the generated image
+        new_image = generated_image.copy()
+
+        mask = self.get_mask(image_height, image_width)
+        original_block = original_image[mask != 0]
+        current_block = new_image[mask != 0]
+
+        if original_block.size > 0:
+            # Calculate the optimal color
+            diff = original_block - current_block
+            numerator = np.sum(diff)
+            denominator = diff.size
+            
+            if denominator != 0:
+                optimal_color = np.mean(current_block) + (numerator / denominator)
+                self.color = int(np.clip(optimal_color, 0, 255))
+            else:
+                self.color = int(np.mean(original_block))
+
+        # Update only the pixels where the mask is non-zero in the new image
+        new_image[mask != 0] = self.color
+
+        return new_image, self.color
